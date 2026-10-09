@@ -2,88 +2,74 @@
 
 ## Objective
 
-Rebuild the DarkLens security monitoring infrastructure using VirtualBox after identifying storage and deployment limitations with Docker Desktop.
+Rebuild the DarkLens lab after encountering storage and resource constraints with the original Docker-based deployment.
 
-## Initial Approach
+## Background
 
-The original DarkLens deployment used Docker Desktop with Wazuh components running in Docker containers.
+The initial Wazuh deployment used Docker Compose through Docker Desktop on Windows. During development, the Docker WSL2 virtual disk grew substantially, consuming significant host storage.
 
-The environment successfully demonstrated:
+This made the original deployment approach unsuitable for the available resources and motivated a change in infrastructure.
 
-- Wazuh Manager
-- Wazuh Indexer
-- Wazuh Dashboard
-- Windows Wazuh Agent
-- Sysmon telemetry
+## Decision
 
-However, Docker Desktop's WSL2 virtual disk grew significantly during telemetry collection, consuming substantial host storage.
+The lab was migrated to VirtualBox, using separate virtual machines for the Wazuh server and Windows endpoint.
 
-## Infrastructure Decision
+The objective remained unchanged: establish a functional security monitoring environment for detection engineering and SOC investigations.
 
-Docker was replaced with VirtualBox for the Wazuh infrastructure.
+## Implementation
 
-The decision was based on:
+The rebuild involved the following work:
 
-- Better control over virtual machine resources
-- Explicit virtual disk allocation
-- Separation from Docker Desktop's WSL2 storage
-- Preservation of the existing Windows endpoint environment
-- Easier resource management for the lab
+1. Removed the previous deployment and rebuilt the lab environment.
+2. Deployed the Wazuh server environment in a VirtualBox virtual machine.
+3. Created a separate Windows endpoint virtual machine.
+4. Installed and connected the Wazuh Agent on the Windows endpoint.
+5. Installed Sysmon and integrated its event collection with Wazuh.
+6. Enabled Wazuh archive collection to support raw-event investigation.
 
 ## Final Architecture
 
-Windows 11 Host
-│
-├── Sysmon
-├── Wazuh Agent
-│
+```text
+Host Machine
 └── VirtualBox
-    └── DarkLens Wazuh Appliance
-        ├── Wazuh Manager
-        ├── Wazuh Indexer
-        └── Wazuh Dashboard
+    ├── Wazuh Server VM
+    │   ├── Wazuh Manager
+    │   ├── Wazuh Indexer
+    │   └── Wazuh Dashboard
+    │
+    └── Windows Endpoint VM
+        ├── Windows 10
+        ├── Sysmon
+        └── Wazuh Agent
+```
 
-## Deployment
+The Windows endpoint and Wazuh server operate in separate virtual machines. The endpoint sends collected telemetry to the monitoring environment.
 
-The official Wazuh Virtual Machine appliance was imported into VirtualBox.
+## Verification Status
 
-The Wazuh services were successfully started and verified.
+The project owner reports that the Wazuh server is running, the Windows Agent is connected, Sysmon is integrated, and archive collection is enabled.
 
-The Wazuh Dashboard was also successfully accessed from the Windows host.
+These conditions establish the reported deployment status. Event-level verification is still required to establish that Sysmon events reach Wazuh and that raw archives are available for search and investigation.
 
-## Troubleshooting
+## Lessons Learned
 
-An initial Ubuntu Server based installation was attempted.
+- Infrastructure resource requirements must be considered before selecting a deployment approach.
+- Docker's convenience does not eliminate the storage overhead of its underlying virtual disks.
+- A migration can be a valid engineering decision when the original approach no longer fits the available environment.
+- Separating the monitored endpoint from the host provides a more controlled environment for security experiments.
+- Successful service deployment and successful telemetry ingestion are separate verification requirements.
 
-The installation encountered multiple issues during deployment, including:
+## Result
 
-- Dashboard installation timeout and system soft-lockup
-- Wazuh Manager installation failure
-- Missing `wazuh-keystore` executable during Manager startup
+The original Docker-based deployment was replaced with a VirtualBox-based lab consisting of a Wazuh server VM and a separate Windows endpoint VM.
 
-The installation was abandoned in favor of the official Wazuh Virtual Machine appliance.
+The migration preserved the project's security monitoring objectives while addressing the constraints encountered during the original implementation.
 
-This reduced infrastructure complexity and allowed development to return to the security objectives of DarkLens.
+The next step is to verify telemetry end to end before developing and testing custom detections.
 
-## Engineering Lesson
+## Related Documentation
 
-Infrastructure is a means to support the security objective rather than the objective itself.
-
-The DarkLens project therefore focuses on:
-
-- Detection engineering
-- Alert triage
-- Threat hunting
-- Incident investigation
-- MITRE ATT&CK mapping
-- Security automation
-
-Wazuh provides the monitoring infrastructure required to perform these activities.
-
-## Stage Result
-
-The DarkLens Wazuh infrastructure is operational using VirtualBox.
-
-## Next Stage
-
-Reconnect the Windows endpoint and verify the complete telemetry pipeline before creating the first custom detection.
+- [Stage 2: Lab Architecture](stage-02-lab-architecture.md)
+- [Stage 3: Wazuh Deployment](stage-03-wazuh-deployment.md)
+- [Stage 4: Windows Agent Integration](stage-04-windows-agent.md)
+- [Stage 5: Sysmon and Windows Telemetry](stage-05-sysmon-telemetry.md)
