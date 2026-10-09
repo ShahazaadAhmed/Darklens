@@ -9,7 +9,7 @@ Connect a Windows endpoint to the Wazuh monitoring environment and establish the
 The current lab uses two separate virtual machines:
 
 - **Wazuh Server VM:** Runs the Wazuh Manager, Indexer, and Dashboard.
-- **Windows Endpoint VM:** Runs Windows 11, Sysmon, and the Wazuh Agent.
+- **Windows Endpoint VM:** Runs Windows 10, Sysmon, and the Wazuh Agent.
 
 This design isolates endpoint experiments from the host machine and separates monitoring infrastructure from the monitored endpoint.
 

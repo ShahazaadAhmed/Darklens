@@ -21,7 +21,7 @@ Host Machine
     │   └── Wazuh Dashboard
     │
     └── Windows Endpoint VM
-        ├── Windows 11
+        ├── Windows 10
         ├── Sysmon
         └── Wazuh Agent
                 │
@@ -35,7 +35,7 @@ Host Machine
 | Wazuh Manager | Receives endpoint data, evaluates rules, and generates alerts |
 | Wazuh Indexer | Stores and indexes data for search and analysis |
 | Wazuh Dashboard | Provides the interface for monitoring and investigation |
-| Windows 11 VM | Acts as the monitored endpoint |
+| Windows 10 VM | Acts as the monitored endpoint |
 | Sysmon | Records detailed Windows system activity |
 | Wazuh Agent | Collects configured endpoint events and forwards them to the server |
 
