@@ -1,0 +1,12 @@
+<group name="local,sysmon,windows,">
+  <rule id="100002" level="10">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\powershell\.exe$</field>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)\\cmd\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)-encodedcommand\b</field>
+    <description>DarkLens: Encoded PowerShell command launched by Command Prompt</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+</group>
