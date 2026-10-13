@@ -1,0 +1,52 @@
+[
+  {
+    "timestamp": "2026-10-13T11:06:36.370Z",
+    "agent": {
+      "name": "Windowmon"
+    },
+    "rule": {
+      "id": "92021",
+      "description": "Powershell was used to delete files or directories",
+      "level": 3
+    },
+    "data": {
+      "win": {
+        "system": {
+          "eventID": "1"
+        },
+        "eventdata": {
+          "processGuid": "{f3ab36c2-10bc-6ace-8b00-000000000f00}",
+          "processId": "4612",
+          "image": "C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "parentImage": "C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe",
+          "commandLine": "powershell secedit /export /cfg $env:TEMP\\secpol.cfg; Get-Content $env:TEMP\\secpol.cfg | Select-String ResetLockoutCount; Remove-Item $env:TEMP\\secpol.cfg",
+          "user": "SYSTEM"
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2026-10-13T11:06:38.814Z",
+    "agent": {
+      "name": "Windowmon"
+    },
+    "rule": {
+      "id": "92201",
+      "description": "PowerShell created a scripting file under Windows Temp",
+      "level": 9
+    },
+    "data": {
+      "win": {
+        "system": {
+          "eventID": "11"
+        },
+        "eventdata": {
+          "processGuid": "{f3ab36c2-10bc-6ace-8b00-000000000f00}",
+          "processId": "4612",
+          "targetFilename": "C:\\Windows\\Temp\\__PSScriptPolicyTest_f2d3qu53.3ax.ps1",
+          "user": "SYSTEM"
+        }
+      }
+    }
+  }
+]

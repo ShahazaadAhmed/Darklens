@@ -1,0 +1,27 @@
+[
+  {
+    "agent": {
+      "name": "Windowmon",
+      "id": "001"
+    },
+    "timestamp": "2026-10-13T11:06:48.451+0000",
+    "data": {
+      "win": {
+        "system": {
+          "eventID": "11"
+        },
+        "eventdata": {
+          "processGuid": "{f3ab36c2-10bc-6ace-8b00-000000000f00}",
+          "processId": "4612",
+          "image": "C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "targetFilename": "C:\\Windows\\Temp\\__PSScriptPolicyTest_f2d3qu53.3ax.ps1"
+        }
+      }
+    },
+    "rule": {
+      "id": "92201",
+      "level": 9,
+      "description": "PowerShell created a new scripting file under Windows Temp or User data folder"
+    }
+  }
+]

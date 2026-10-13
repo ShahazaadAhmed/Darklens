@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Generated investigation reports
+output/
+
+# Virtual environments
+.venv/
+venv/

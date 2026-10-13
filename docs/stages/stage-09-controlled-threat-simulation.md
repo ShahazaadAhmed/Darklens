@@ -51,3 +51,52 @@ Screenshots are stored in `evidences/simulation-01/`.
 ## Status
 
 **Completed:** Both controlled simulations executed and their telemetry verified. Detection validation and broader false-positive testing remain for Stage 10.
+
+## Negative Test: Encoded PowerShell Launched by PowerShell
+
+### Objective
+
+Validate that custom rule `100002` only triggers when encoded PowerShell is launched by `cmd.exe`, rather than matching every encoded PowerShell command.
+
+### Test Execution
+
+Executed a benign encoded PowerShell command from an existing PowerShell session.
+
+**Test marker:** `DarkLens-Negative-Test`
+
+**Timestamp:** 2026-10-13 13:30:08.981 UTC
+
+### Results
+
+Sysmon Event ID 1 confirmed that the child PowerShell process was created and the event was indexed in Wazuh archives.
+
+| Field | Observed value |
+|---|---|
+| Child process | `powershell.exe` |
+| Parent process | `powershell.exe` |
+| Process ID | `6992` |
+| Process GUID | `{f3ab36c2-3260-6ace-4c02-000000000f00}` |
+| Custom rule | `100002` did not trigger |
+| Built-in rule | `92057` triggered at level 12 |
+
+### Evidence
+
+**1. Raw Sysmon process event** : `..//evidences/simulation-01/`
+
+The event confirms the encoded command, process GUID, and PowerShell parent process.
+
+`negative-test-process-event.png`
+
+**2. Built-in Wazuh alert**
+
+Rule `92057` independently detected encoded PowerShell launched by another PowerShell process.
+
+`negative-test-builtin-alert.png`
+
+### Conclusion
+
+The negative test passed for custom rule `100002`. Its parent-process condition correctly excluded the event because the parent was PowerShell rather than `cmd.exe`.
+
+Built-in rule `92057` independently detected the activity. This demonstrates overlapping detection coverage and does not indicate a failure of the custom rule.
+
+The test used a benign payload and validates rule-matching behaviour, not the detection of malicious activity in general.
