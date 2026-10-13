@@ -1,4 +1,3 @@
-
 import json
 
 import pytest
@@ -198,3 +197,46 @@ def test_does_not_treat_pid_only_match_as_process_correlation():
     assert result["process_correlations"] == []
     assert result["findings"] == []
     assert len(result["pid_match_candidates"]) == 1
+
+def test_real_events_sample_preserves_timestamps_and_evidence_gaps():
+    from pathlib import Path
+
+    from tools.investigator.engine import investigate, load_events
+
+    sample_path = (
+        Path(__file__).resolve().parents[1]
+        / "samples"
+        / "real-events.json"
+    )
+
+    events = load_events([sample_path])
+    report = investigate(events)
+
+    assert len(events) == 2
+    assert len(report["timeline"]) == 2
+
+    # Prefer actual Sysmon event times over Wazuh ingestion times.
+    assert report["timeline"][0]["timestamp"].startswith(
+        "2026-10-13T11:06:36.370"
+    )
+    assert report["timeline"][1]["timestamp"].startswith(
+        "2026-10-13T11:06:36.928"
+    )
+
+    # Both events belong to the same process.
+    assert report["timeline"][0]["process_guid"] == (
+        report["timeline"][1]["process_guid"]
+    )
+    assert len(report["findings"]) == 1
+
+    finding = report["findings"][0]
+    assert finding["type"] == "process_file_creation_correlation"
+    assert (
+        r"C:\Windows\Temp\__PSScriptPolicyTest_f2d3qu53.3ax.ps1"
+        in finding["files_created"]
+    )
+
+    # Correlation must not be presented as proof of file deletion.
+    evidence_gaps = " ".join(finding["evidence_gaps"]).lower()
+    assert "deletion" in evidence_gaps
+    assert "confirmed" in evidence_gaps
