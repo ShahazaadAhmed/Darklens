@@ -1,4 +1,3 @@
-
 import argparse
 import json
 from collections import defaultdict
@@ -168,6 +167,48 @@ def _sort_key(event):
     )
 
 
+def _detection_context(related_events):
+    """Summarise observed Wazuh rules without assigning a threat score."""
+    rules_by_key = {}
+    numeric_levels = []
+
+    for event in related_events:
+        rule_id = event.get("rule_id")
+        description = event.get("rule_description")
+        raw_level = event.get("level")
+
+        try:
+            level = int(raw_level) if raw_level is not None else None
+        except (TypeError, ValueError):
+            level = None
+
+        key = (str(rule_id or ""), str(description or ""))
+
+        if key not in rules_by_key:
+            rules_by_key[key] = {
+                "rule_id": rule_id,
+                "description": description,
+                "observed_level": level,
+            }
+        elif (
+            level is not None
+            and (
+                rules_by_key[key]["observed_level"] is None
+                or level > rules_by_key[key]["observed_level"]
+            )
+        ):
+            rules_by_key[key]["observed_level"] = level
+
+        if level is not None:
+            numeric_levels.append(level)
+
+    return {
+        "detection_context": list(rules_by_key.values()),
+        "highest_observed_alert_level": (
+            max(numeric_levels) if numeric_levels else None
+        ),
+    }
+
 def investigate(events):
     """Correlate events by GUID and report evidence without threat verdicts."""
     timeline = [
@@ -214,9 +255,26 @@ def investigate(events):
                 if item.get("target_filename")
             })
 
+            detection_context = _detection_context(related)
+
+            analyst_follow_up = [
+                "Inspect the created file, including its contents and hash.",
+                "Search for subsequent execution of the file and related "
+                "process activity.",
+                "Verify file deletion using suitable deletion telemetry "
+                "before concluding that the file was removed.",
+                "Validate whether the command and activity are expected "
+                "for the endpoint and its security tooling.",
+            ]
+
             findings.append({
                 "type": "process_file_creation_correlation",
                 "process_guid": guid,
+                "detection_context": detection_context["detection_context"],
+                "highest_observed_alert_level": (
+                    detection_context["highest_observed_alert_level"]
+                ),
+                "analyst_follow_up": analyst_follow_up,
                 "assessment": (
                     "Sysmon process-creation and file-creation events share "
                     "the same process GUID."
@@ -351,6 +409,30 @@ def write_reports(result, output_dir):
         ])
         lines.extend(f"  - {item}" for item in finding["observed_evidence"])
 
+        lines.extend(["- Detection context:", ""])
+
+        for detection in finding.get("detection_context", []):
+            lines.append(
+                f"  - Rule {detection.get('rule_id') or 'Unknown'}: "
+                f"{detection.get('description') or 'No description'} "
+                f"(observed level: "
+                f"{detection.get('observed_level') if detection.get('observed_level') is not None else 'Unavailable'})"
+            )
+
+        highest_level = finding.get("highest_observed_alert_level")
+        lines.append(
+            "- Highest observed alert level: "
+            f"{highest_level if highest_level is not None else 'Unavailable'}"
+        )
+        lines.append(
+            "- Note: Wazuh alert levels are not a calculated threat score."
+        )
+
+        lines.append("- Analyst follow-up:")
+        lines.extend(
+            f"  - {item}"
+            for item in finding.get("analyst_follow_up", [])
+        )
         for process in finding.get("process_details", []):
             lines.extend([
                 "- Process details:",

@@ -240,3 +240,63 @@ def test_real_events_sample_preserves_timestamps_and_evidence_gaps():
     evidence_gaps = " ".join(finding["evidence_gaps"]).lower()
     assert "deletion" in evidence_gaps
     assert "confirmed" in evidence_gaps
+
+def test_finding_includes_detection_context_and_analyst_follow_up(sample_events):
+    sample_events[1]["rule"] = {
+        "id": "92201",
+        "level": 9,
+        "description": "PowerShell created a scripting file",
+    }
+
+    result = investigate(sample_events)
+    finding = result["findings"][0]
+
+    assert finding["highest_observed_alert_level"] == 9
+    assert len(finding["detection_context"]) == 2
+    assert any(
+        item["rule_id"] == "92021"
+        and item["observed_level"] == 3
+        for item in finding["detection_context"]
+    )
+    assert any(
+        item["rule_id"] == "92201"
+        and item["observed_level"] == 9
+        for item in finding["detection_context"]
+    )
+    assert finding["analyst_follow_up"]
+    assert any(
+        "deletion" in item.lower()
+        for item in finding["analyst_follow_up"]
+    )
+
+
+def test_finding_handles_missing_and_invalid_alert_levels(sample_events):
+    for event in sample_events:
+        event["rule"] = {
+            "id": "test-rule",
+            "description": "Test rule",
+            "level": "invalid",
+        }
+
+    result = investigate(sample_events)
+    finding = result["findings"][0]
+
+    assert finding["highest_observed_alert_level"] is None
+    assert finding["detection_context"][0]["observed_level"] is None
+
+
+def test_markdown_report_includes_detection_context(sample_events, tmp_path):
+    sample_events[1]["rule"] = {
+        "id": "92201",
+        "level": 9,
+        "description": "PowerShell created a scripting file",
+    }
+
+    result = investigate(sample_events)
+    _, markdown_path = write_reports(result, tmp_path / "reports")
+    report = markdown_path.read_text(encoding="utf-8")
+
+    assert "Detection context" in report
+    assert "Highest observed alert level: 9" in report
+    assert "not a calculated threat score" in report
+    assert "Analyst follow-up" in report

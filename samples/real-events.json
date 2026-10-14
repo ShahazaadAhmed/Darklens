@@ -1,27 +1,60 @@
+
 [
   {
     "agent": {
       "name": "Windowmon",
       "id": "001"
     },
-    "timestamp": "2026-10-13T11:06:48.451+0000",
+    "timestamp": "2026-10-13T11:06:47.605+0000",
+    "rule": {
+      "id": "92021",
+      "level": 3,
+      "description": "Powershell was used to delete files or directories"
+    },
     "data": {
       "win": {
         "system": {
-          "eventID": "11"
+          "eventID": "1",
+          "systemTime": "2026-10-13T11:06:36.3944588Z"
         },
         "eventdata": {
+          "utcTime": "2026-10-13 11:06:36.370",
           "processGuid": "{f3ab36c2-10bc-6ace-8b00-000000000f00}",
           "processId": "4612",
           "image": "C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe",
-          "targetFilename": "C:\\Windows\\Temp\\__PSScriptPolicyTest_f2d3qu53.3ax.ps1"
+          "parentImage": "C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe",
+          "commandLine": "powershell secedit /export /cfg $env:TEMP\\secpol.cfg; Get-Content $env:TEMP\\secpol.cfg | Select-String \"ResetLockoutCount\"; Remove-Item $env:TEMP\\secpol.cfg",
+          "user": "NT AUTHORITY\\SYSTEM"
         }
       }
+    }
+  },
+  {
+    "agent": {
+      "name": "Windowmon",
+      "id": "001"
     },
+    "timestamp": "2026-10-13T11:06:48.451+0000",
     "rule": {
       "id": "92201",
       "level": 9,
       "description": "PowerShell created a new scripting file under Windows Temp or User data folder"
+    },
+    "data": {
+      "win": {
+        "system": {
+          "eventID": "11",
+          "systemTime": "2026-10-13T11:06:36.9865850Z"
+        },
+        "eventdata": {
+          "utcTime": "2026-10-13 11:06:36.928",
+          "processGuid": "{f3ab36c2-10bc-6ace-8b00-000000000f00}",
+          "processId": "4612",
+          "image": "C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "targetFilename": "C:\\Windows\\Temp\\__PSScriptPolicyTest_f2d3qu53.3ax.ps1",
+          "user": "NT AUTHORITY\\SYSTEM"
+        }
+      }
     }
   }
 ]
