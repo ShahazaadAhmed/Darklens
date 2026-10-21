@@ -420,7 +420,7 @@ if page == "Overview":
         panel(
             "branch",
             "Investigation workflow",
-            "The engine connects in the next checkpoint. Metrics above will fill in as soon as it does.",
+            "Follow a structured workflow from event ingestion to evidence-based investigation reporting.",
             body,
         )
     with right:
